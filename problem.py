@@ -1,4 +1,4 @@
-from collections import deque
+from queue import PriorityQueue
 import copy
 
 # Definition for singly-linked list.
@@ -7,14 +7,19 @@ class Node:
     parent = None
     
     def __init__(self, state, parent=None):
+        #print("node created with state", state)
         self.state = state
         self.parent = parent
 
     def printNode(self):
+        print("")
         for i in self.state:
             for j in i:
                 print(j, end = " ")
             print(end = "\n")
+
+    def __lt__(self, Node): # sorting function for priority queue
+        return Node
 
 
 def findZero(state):
@@ -57,6 +62,39 @@ class Problem:
         tempNode.state[position[0]][position[1]] = tempVal
 
         return tempNode
+    
+    def slidedown(self, curr):  # swap the 0 with the element above it
+        tempNode = copy.deepcopy(curr)
+        position = findZero(tempNode.state)
+        tempVal = tempNode.state[position[0]+1][position[1]]
+
+        tempNode.state[position[0]+1][position[1]] = 0
+        tempNode.state[position[0]][position[1]] = tempVal
+
+        return tempNode
+    
+    def slideleft(self, curr):  # swap the 0 with the element above it
+        tempNode = copy.deepcopy(curr)
+        position = findZero(tempNode.state)
+        tempVal = tempNode.state[position[0]][position[1]-1]
+
+        tempNode.state[position[0]][position[1]-1] = 0
+        tempNode.state[position[0]][position[1]] = tempVal
+
+        return tempNode
+    
+    def slideright(self, curr):  # swap the 0 with the element above it
+        tempNode = copy.deepcopy(curr)
+        position = findZero(tempNode.state)
+        tempVal = tempNode.state[position[0]][position[1]+1]
+
+        tempNode.state[position[0]][position[1]+1] = 0
+        tempNode.state[position[0]][position[1]] = tempVal
+
+        return tempNode
+    
+    def is_solution(self, curr):
+        return curr.state == self.goalState
 
 
 def main():
@@ -64,16 +102,57 @@ def main():
     state_i = [[1, 2, 3], [4, 8, 0], [7, 6, 5]]
     head = Node(state_i)
 
+    print("origonal:", end = " ")
+    head.printNode()
+
     problem = Problem()
     invalid = problem.getInvalidMoves(head)
 
-    visited = [] # initalize visited set and fronter
-    q = deque()
+    visited = [head.state] # initalize visited set and fronter
+    q = PriorityQueue(maxsize = 90)
+
     if ("up" not in invalid):
-        q.append(problem.slideup(head))
+        q.put(problem.slideup(head))
+    if ("down" not in invalid):
+        q.put(problem.slidedown(head))
+    if ("left" not in invalid):
+        q.put(problem.slideleft(head))
+    if ("right" not in invalid):
+        q.put(problem.slideright(head))
     
-    node = q.popleft()
-    node.printNode()
+    
+    while (not q.empty()):
+        print("queue size:", q.qsize())
+        curr = q.get()
+
+        if curr.state in visited:
+            continue
+        visited.append(curr.state)
+
+        curr.printNode()
+        #print(visited)
+
+        if (problem.is_solution(curr)):
+            print("success!")
+            break
+
+        invalid = problem.getInvalidMoves(curr)
+
+        if ("up" not in invalid):
+            q.put(problem.slideup(curr))
+        if ("down" not in invalid):
+            q.put(problem.slidedown(curr))
+        if ("left" not in invalid):
+            q.put(problem.slideleft(curr))
+        if ("right" not in invalid):
+            q.put(problem.slideright(curr))
+
+        
+    if q.empty():
+        print("failure!")
+    
+
+    print("total number of nodes visited was ", len(visited))
 
 if __name__=="__main__": 
-    main() 
+    main()
