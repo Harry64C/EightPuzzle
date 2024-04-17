@@ -175,7 +175,7 @@ def main():
     
     
 
-    print("total number of nodes visited was ", len(visited))
+    print("total number of nodes visited was", len(visited))
 
 if __name__=="__main__": 
     main()
