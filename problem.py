@@ -5,6 +5,7 @@ import copy
 class Node:
     state = []
     parent = None
+    depth = 0
     
     def __init__(self, state, parent=None):
         #print("node created with state", state)
@@ -19,7 +20,7 @@ class Node:
             print(end = "\n")
 
     def __lt__(self, Node): # sorting function for priority queue
-        return Node
+        return 1
 
 
 def findZero(state):
@@ -61,6 +62,9 @@ class Problem:
         tempNode.state[position[0]-1][position[1]] = 0
         tempNode.state[position[0]][position[1]] = tempVal
 
+        tempNode.parent = curr
+        tempNode.depth += 1
+
         return tempNode
     
     def slidedown(self, curr):  # swap the 0 with the element above it
@@ -70,6 +74,9 @@ class Problem:
 
         tempNode.state[position[0]+1][position[1]] = 0
         tempNode.state[position[0]][position[1]] = tempVal
+
+        tempNode.parent = curr
+        tempNode.depth += 1
 
         return tempNode
     
@@ -81,6 +88,9 @@ class Problem:
         tempNode.state[position[0]][position[1]-1] = 0
         tempNode.state[position[0]][position[1]] = tempVal
 
+        tempNode.parent = curr
+        tempNode.depth += 1
+
         return tempNode
     
     def slideright(self, curr):  # swap the 0 with the element above it
@@ -91,10 +101,20 @@ class Problem:
         tempNode.state[position[0]][position[1]+1] = 0
         tempNode.state[position[0]][position[1]] = tempVal
 
+        tempNode.parent = curr
+        tempNode.depth += 1
+
         return tempNode
     
     def is_solution(self, curr):
         return curr.state == self.goalState
+    
+    def outputSequence(self, curr):
+        if (curr == None):
+            return
+        
+        curr.printNode()
+        self.outputSequence(curr.parent)
 
 
 def main():
@@ -102,14 +122,14 @@ def main():
     state_i = [[1, 2, 3], [4, 8, 0], [7, 6, 5]]
     head = Node(state_i)
 
-    print("origonal:", end = " ")
+    print("\nOrigonal:", end = " ")
     head.printNode()
 
     problem = Problem()
     invalid = problem.getInvalidMoves(head)
 
     visited = [head.state] # initalize visited set and fronter
-    q = PriorityQueue(maxsize = 90)
+    q = PriorityQueue(maxsize = 400)
 
     if ("up" not in invalid):
         q.put(problem.slideup(head))
@@ -122,18 +142,20 @@ def main():
     
     
     while (not q.empty()):
-        print("queue size:", q.qsize())
+        if (q.full()):
+            print("\nUnsolvable with a queue of size", q.qsize())
+            break
+
         curr = q.get()
 
         if curr.state in visited:
             continue
         visited.append(curr.state)
 
-        curr.printNode()
-        #print(visited)
-
         if (problem.is_solution(curr)):
-            print("success!")
+            print("\n-----success-----")
+            print("winning sequence:")
+            problem.outputSequence(curr)
             break
 
         invalid = problem.getInvalidMoves(curr)
@@ -151,8 +173,14 @@ def main():
     if q.empty():
         print("failure!")
     
+    
 
     print("total number of nodes visited was ", len(visited))
 
 if __name__=="__main__": 
     main()
+
+
+
+# [[1, 2, 3], [4, 8, 0], [7, 6, 5]]
+# [[1, 0, 3], [4, 2, 6], [7, 5, 8]]
