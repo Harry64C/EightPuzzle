@@ -1,6 +1,7 @@
 from queue import PriorityQueue
 import copy
 
+global solutionType
 
 # Node class that represents a single problem state
 class Node:
@@ -20,8 +21,31 @@ class Node:
                 print(j, end = " ")
             print(end = "\n")
 
-    def __lt__(self, Node): # sorting function for priority queue
-        return self.depth < Node.depth
+    # calculate the heuristic
+    def h(self, curr):
+        if (solutionType == "Uniform Cost"):
+            return 0
+        elif (solutionType == "Misplaced Tile"):
+            numMisses = 0
+            correctTile = 1
+
+            # increment numMisses for each tile not in the correct spot
+            for i in range(0, 3):
+                for j in range(0, 3):
+                    if (correctTile == 9):
+                        if curr.state[2][2] != 0:
+                            numMisses += 1
+                    elif (curr.state[i][j] != correctTile):
+                        numMisses += 1
+                    correctTile += 1
+            # return the number of misses as the heuristic 
+            return numMisses
+
+        else:
+            return 0
+
+    def __lt__(self, node): # sorting function for priority queue
+        return (self.depth + self.h(self)) < (node.depth + self.h(node))
 
 
 # returns the coordinates of the empty tile
@@ -125,26 +149,38 @@ class Problem:
 
 
 def main():
+    state_i = [[1, 2, 3], [4, 8, 0], [7, 6, 5]]
 
     # handle input
-    state_i = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    inp = input("Enter your puzzle, use a zero to represent the blank: ")
-    k = 0
-    for i in range(0, 3):
-        for j in range(0, 3):
-            state_i[i][j] = int(inp[k])
-            k += 1
+    choice = input("Welcome to hcoop006 8 puzzle solver. Type “1” to use a default puzzle, or “2” to enter your own puzzle.\n")
+
+    if (choice == '2'):
+        inp = input("Enter your puzzle, use a zero to represent the blank: ")
+        k = 0
+        for i in range(0, 3):
+            for j in range(0, 3):
+                state_i[i][j] = int(inp[k])
+                k += 1
+    
+    choice = input("Enter your choice of algorithm\nUniform Cost Search\nA* with the Misplaced Tile heuristic.\nA* with the Euclidean distance heuristic.")
+    global solutionType
+
+    if (choice == '1'): 
+        print("you chose ucs!")
+        solutionType = "Uniform Cost"
+    elif (choice == '2'): solutionType = "Misplaced Tile"
+    else: solutionType = "Euclidean Distance"
             
     head = Node(state_i)
     
-    print("\nOriginal:", end = " ")
+    print("\nStart State:", end = " ")
     head.printNode()
 
     problem = Problem()
     invalid = problem.getInvalidMoves(head)
 
     visited = [head.state] # initalize visited set and fronter
-    q = PriorityQueue(maxsize = 8000)
+    q = PriorityQueue(maxsize = 10000)
 
     if ("up" not in invalid):
         q.put(problem.slideup(head))
@@ -163,9 +199,6 @@ def main():
             break
 
         curr = q.get()
-
-        if curr.state in visited:
-            continue
         visited.append(curr.state)
 
         if (problem.is_solution(curr)):
@@ -177,14 +210,21 @@ def main():
         invalid = problem.getInvalidMoves(curr)
 
         if ("up" not in invalid):
-            q.put(problem.slideup(curr))
+            temp = problem.slideup(curr)
+            if temp.state not in visited:
+                q.put(temp)
         if ("down" not in invalid):
-            q.put(problem.slidedown(curr))
+            temp = problem.slidedown(curr)
+            if temp.state not in visited:
+                q.put(temp)
         if ("left" not in invalid):
-            q.put(problem.slideleft(curr))
+            temp = problem.slideleft(curr)
+            if temp.state not in visited:
+                q.put(temp)
         if ("right" not in invalid):
-            q.put(problem.slideright(curr))
-
+            temp = problem.slideright(curr)
+            if temp.state not in visited:
+                q.put(temp)
         
     if q.empty():
         print("failure!")
@@ -197,6 +237,5 @@ if __name__=="__main__":
 
 
 
-# 123480765
 # 103426758
-# 720651483
+# 641752083
