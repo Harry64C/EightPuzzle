@@ -3,6 +3,26 @@ import copy
 
 global solutionType
 
+
+def eucDistance(x1, y1, x2, y2): # calculates the euclidean distance between 2 coordinates
+    temp1 = pow((x2  - x1), 2)
+    temp2 = pow((y2 - y1), 2)
+    return int((temp1 + temp2) ** 0.5)
+
+def getCoordinates(tile): # returns the intended x and y coordinates of a tile
+    if (tile == 0):
+        return [2, 2]
+    cnt = 1
+    for i in range(0, 3):
+        for j in range(0, 3):
+            if (tile == cnt):
+                return [i, j]
+            cnt += 1
+    print("tile does not exist:", tile)
+    return -1 # tile does not exist
+
+
+
 # Node class that represents a single problem state
 class Node:
     state = []
@@ -41,8 +61,18 @@ class Node:
             # return the number of misses as the heuristic 
             return numMisses
 
-        else:
-            return 0
+        else: # Euclidean Distance
+            heuristic = 0
+            correctTile = 1
+
+            # heuristic is the summation of all the euc distances
+            for i in range(0, 3):
+                for j in range(0, 3):
+                    coords = getCoordinates(curr.state[i][j])
+                    heuristic += eucDistance(coords[0], coords[1], i, j)
+                    correctTile += 1
+            #print("huristic for state _ is ", curr.state, heuristic)
+            return heuristic
 
     def __lt__(self, node): # sorting function for priority queue
         return (self.depth + self.h(self)) < (node.depth + self.h(node))
@@ -162,7 +192,7 @@ def main():
                 state_i[i][j] = int(inp[k])
                 k += 1
     
-    choice = input("Enter your choice of algorithm\nUniform Cost Search\nA* with the Misplaced Tile heuristic.\nA* with the Euclidean distance heuristic.")
+    choice = input("Enter your choice of algorithm\nUniform Cost Search\nA* with the Misplaced Tile heuristic.\nA* with the Euclidean distance heuristic. ")
     global solutionType
 
     if (choice == '1'): 
@@ -191,7 +221,8 @@ def main():
     if ("right" not in invalid):
         q.put(problem.slideright(head))
     
-    
+    maxSize = 0
+    solutionDepth = -1
 
     while (not q.empty()):
         if (q.full()):
@@ -202,8 +233,8 @@ def main():
         visited.append(curr.state)
 
         if (problem.is_solution(curr)):
-            print("\n-----success-----\nwinning sequence:")
-            print()
+            print("\n-----success-----\nwinning sequence:\n")
+            solutionDepth = curr.depth
             problem.outputSequence(curr)
             break
 
@@ -225,12 +256,15 @@ def main():
             temp = problem.slideright(curr)
             if temp.state not in visited:
                 q.put(temp)
+
+        maxSize = max(maxSize, q.qsize())
         
     if q.empty():
         print("failure!")
     
-    print("total number of nodes visited was", len(visited))
-
+    print("To solve this problem the search algorithm expanded a total of", len(visited), "nodes")
+    print("The maximum number of nodes in the queue at any one time:", maxSize)
+    if (solutionDepth != -1): print("The depth of the goal node was", solutionDepth)
 
 if __name__=="__main__": 
     main()
