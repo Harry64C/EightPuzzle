@@ -178,8 +178,9 @@ class Problem:
         self.outputSequence(curr.parent)
 
 
+
 def main():
-    state_i = [[1, 2, 3], [4, 8, 0], [7, 6, 5]]
+    state_i = [[1, 2, 3], [4, 8, 0], [7, 6, 5]] # default puzzle
 
     # handle input
     choice = input("Welcome to hcoop006 8 puzzle solver. Type “1” to use a default puzzle, or “2” to enter your own puzzle.\n")
@@ -210,7 +211,7 @@ def main():
     invalid = problem.getInvalidMoves(head)
 
     visited = [head.state] # initalize visited set and fronter
-    q = PriorityQueue(maxsize = 10000)
+    q = PriorityQueue(maxsize = 90000)
 
     if ("up" not in invalid):
         q.put(problem.slideup(head))
@@ -237,6 +238,8 @@ def main():
             solutionDepth = curr.depth
             problem.outputSequence(curr)
             break
+
+        # print("The best node to expand with g(n) =", curr.depth, "and h(n) =", curr.h(curr), "is...")
 
         invalid = problem.getInvalidMoves(curr)
 
@@ -266,10 +269,12 @@ def main():
     print("The maximum number of nodes in the queue at any one time:", maxSize)
     if (solutionDepth != -1): print("The depth of the goal node was", solutionDepth)
 
+
 if __name__=="__main__": 
     main()
 
-
-
-# 103426758
-# 641752083
+# --- test cases --- #
+# 103426758   
+# 641752083   
+# 871602543   
+# 847150263   
