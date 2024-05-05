@@ -68,8 +68,9 @@ class Node:
             # heuristic is the summation of all the euc distances
             for i in range(0, 3):
                 for j in range(0, 3):
-                    coords = getCoordinates(curr.state[i][j])
-                    heuristic += eucDistance(coords[0], coords[1], i, j)
+                    if (curr.state[i][j] != 0): # don't count empty tile
+                        coords = getCoordinates(curr.state[i][j])
+                        heuristic += eucDistance(coords[0], coords[1], i, j)
                     correctTile += 1
             #print("huristic for state _ is ", curr.state, heuristic)
             return heuristic
@@ -239,7 +240,9 @@ def main():
             problem.outputSequence(curr)
             break
 
-        # print("The best node to expand with g(n) =", curr.depth, "and h(n) =", curr.h(curr), "is...")
+        print("\nThe best node to expand with g(n) =", curr.depth, "and h(n) =", curr.h(curr), "is...")
+        curr.printNode()
+        print("Expanding this node...")
 
         invalid = problem.getInvalidMoves(curr)
 
